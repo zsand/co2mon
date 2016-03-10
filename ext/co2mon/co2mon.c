@@ -35,42 +35,11 @@ typedef hid_device *co2mon_device;
 
 typedef unsigned char co2mon_data_t[8];
 
-int
-co2mon_init()
-{
-    int r = hid_init();
-    if (r < 0)
-    {
-        fprintf(stderr, "hid_init: error\n");
-    }
-    return r;
-}
-
-void
-co2mon_exit()
-{
-    int r = hid_exit();
-    if (r < 0)
-    {
-        fprintf(stderr, "hid_exit: error\n");
-    }
-}
-
 hid_device *
 co2mon_open_device()
 {
     hid_device *dev = hid_open(0x04d9, 0xa052, NULL);
-    if (!dev)
-    {
-        fprintf(stderr, "hid_open: error\n");
-    }
     return dev;
-}
-
-void
-co2mon_close_device(hid_device *dev)
-{
-    hid_close(dev);
 }
 
 int
@@ -225,48 +194,29 @@ static int *device_loop(co2mon_device dev)
 
 static int *main_loop()
 {
-    int error_shown = 0;
+    static int empty_result[2] = {0};
+
     co2mon_device dev = co2mon_open_device();
+
     if (dev == NULL)
     {
-        if (!error_shown)
-        {
-            fprintf(stderr, "Unable to open CO2 device\n");
-            error_shown = 1;
-        }
-    } else {
-        error_shown = 0;
+      return empty_result;
     }
 
     int *result = device_loop(dev);
 
-    co2mon_close_device(dev);
+    hid_close(dev);
 
     return result;
 }
 
-VALUE get(VALUE self)
+int *get()
 {
-    int r = co2mon_init();
-    if (r < 0)
-    {
-        return r;
-    }
+    hid_init();
 
     int *result = main_loop();
 
-    co2mon_exit();
+    hid_exit();
 
-    VALUE array;
-    array = rb_ary_new();
-    rb_ary_push(array, INT2FIX(result[0]));
-    rb_ary_push(array, INT2FIX(result[1]));
-
-    return array;
-}
-
-void
-Init_co2mon(void) {
-  VALUE cCo2mon = rb_define_class("Co2mon", rb_cObject);
-  rb_define_singleton_method(cCo2mon, "get", get, 0);
+    return result;
 }
