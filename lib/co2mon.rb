@@ -4,7 +4,7 @@ require "ffi"
 module Co2mon
   extend FFI::Library
 
-  ffi_lib File.expand_path("co2mon.bundle", __dir__)
+  ffi_lib File.expand_path("co2mon.so", __dir__)
 
   attach_function :get, [], :pointer
 
