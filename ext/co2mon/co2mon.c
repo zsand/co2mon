@@ -125,13 +125,13 @@ decode_temperature(uint16_t w)
     return (double)w * 0.0625 - 273.15;
 }
 
-static int *device_loop(co2mon_device dev)
+static double *device_loop(co2mon_device dev)
 {
     co2mon_data_t magic_table = { 0 };
     co2mon_data_t result;
-    int temp = 0;
-    int co = 0;
-    static int array [2];
+    double temp = 0;
+    double co = 0;
+    static double array [2];
 
     if (!co2mon_send_magic_table(dev, magic_table))
     {
@@ -171,7 +171,7 @@ static int *device_loop(co2mon_device dev)
         switch (r0)
         {
         case CODE_TAMB:
-            temp = (int)decode_temperature(w);
+            temp = decode_temperature(w);
 
             break;
         case CODE_CNTR:
@@ -180,7 +180,7 @@ static int *device_loop(co2mon_device dev)
                 break;
             }
 
-            co = (int)w;
+            co = (double)w;
 
             break;
         }
@@ -192,9 +192,9 @@ static int *device_loop(co2mon_device dev)
     return array;
 }
 
-static int *main_loop()
+static double *main_loop()
 {
-    static int empty_result[2] = {0};
+    static double empty_result[2] = {0};
 
     co2mon_device dev = co2mon_open_device();
 
@@ -203,18 +203,18 @@ static int *main_loop()
       return empty_result;
     }
 
-    int *result = device_loop(dev);
+    double *result = device_loop(dev);
 
     hid_close(dev);
 
     return result;
 }
 
-int *get()
+double *get()
 {
     hid_init();
 
-    int *result = main_loop();
+    double *result = main_loop();
 
     hid_exit();
 
