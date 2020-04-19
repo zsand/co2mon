@@ -9,7 +9,7 @@ module Co2mon
   attach_function :get, [], :pointer
 
   def self.get_data
-    data = get.get_array_of_int32(0, 2)
+    data = get.read_array_of_double(2)
 
     {
       :co2 => data[0],
